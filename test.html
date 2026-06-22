@@ -1,0 +1,293 @@
+import json
+import random
+from pathlib import Path
+import arcade
+
+HIGH_SCORE_FILE = Path(__file__).parent / "highscore.json"
+MUSIC_FILE      = Path(__file__).parent / "music.mp3"
+
+def load_high_score() -> int:
+    try:
+        return json.loads(HIGH_SCORE_FILE.read_text())["high_score"]
+    except (FileNotFoundError, KeyError, json.JSONDecodeError):
+        return 0
+
+
+def save_high_score(score: int) -> None:
+    HIGH_SCORE_FILE.write_text(json.dumps({"high_score": score}))
+
+CELL  = 30
+COLS  = 30
+ROWS  = 24
+W     = COLS * CELL
+H     = ROWS * CELL
+SPEED = 250  # ms per tick
+
+BG_COLOR      = (15,  52,  96)
+GRID_COLOR    = (22,  33,  62)
+CELL_LIGHT    = (20,  58, 105)
+CELL_DARK     = (13,  45,  84)
+HEAD_COLOR  = (  0, 255, 136)
+BODY_COLOR  = (  0, 204, 102)
+APPLE_COLOR = (255,  68,  68)
+STEM_COLOR  = ( 68, 170,   0)
+
+STATE_MENU     = "menu"
+STATE_PLAYING  = "playing"
+STATE_GAMEOVER = "gameover"
+
+
+class Snake:
+    def __init__(self, x, y):
+        self.segments = [(x, y), (x - 1, y), (x - 2, y)]
+        self.dir      = (1, 0)
+        self.next_dir = (1, 0)
+
+    @property
+    def head(self):
+        return self.segments[0]
+
+    def queue_dir(self, dx, dy):
+        if self.dir == (-dx, -dy):
+            return
+        self.next_dir = (dx, dy)
+
+    def occupies(self, x, y):
+        return (x, y) in self.segments
+
+    def advance(self):
+        self.dir = self.next_dir
+        hx, hy   = self.head
+        dx, dy   = self.dir
+        new_head = (hx + dx, hy + dy)
+
+        nx, ny = new_head
+        if nx < 0 or nx >= COLS or ny < 0 or ny >= ROWS:
+            return "wall"
+        if self.occupies(nx, ny):
+            return "self"
+
+        self.segments.insert(0, new_head)
+        return None
+
+    def shrink(self):
+        self.segments.pop()
+
+
+class Apple:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+
+    def respawn(self, snake):
+        while True:
+            x = random.randint(0, COLS - 1)
+            y = random.randint(0, ROWS - 1)
+            if not snake.occupies(x, y):
+                self.x, self.y = x, y
+                break
+
+    def is_at(self, x, y):
+        return self.x == x and self.y == y
+
+
+MUTE_BTN_W = 90
+MUTE_BTN_H = 34
+MUTE_BTN_X = W // 2
+MUTE_BTN_Y = H + 30
+
+
+class SnakeGame(arcade.Window):
+    def __init__(self):
+        super().__init__(W, H + 60, "Snake Game", resizable=False)
+        arcade.set_background_color(arcade.color.BLACK)
+        self.state      = STATE_MENU
+        self.snake      = None
+        self.apple      = None
+        self.score      = 0
+        self.high_score = load_high_score()
+        self._tick_acc  = 0.0
+        self._burger_tex = arcade.load_texture("burger.png")
+
+        self._muted  = False
+        self._music  = arcade.load_sound(str(MUSIC_FILE))
+        self._player = arcade.play_sound(self._music, volume=0.5, loop=True)
+
+    def _start(self):
+        self.snake     = Snake(10, 12)
+        self.apple     = Apple()
+        self.apple.respawn(self.snake)
+        self.score     = 0
+        self._tick_acc = 0.0
+        self.state     = STATE_PLAYING
+
+    # ── input ────────────────────────────────────────────────────────────────
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if (abs(x - MUTE_BTN_X) <= MUTE_BTN_W // 2 and
+                abs(y - MUTE_BTN_Y) <= MUTE_BTN_H // 2):
+            self._muted = not self._muted
+            self._player.volume = 0.0 if self._muted else 0.5
+
+    def on_key_press(self, key, mods):
+        if self.state == STATE_MENU:
+            self._start()
+            return
+        if self.state == STATE_GAMEOVER:
+            self._start()
+            return
+
+        if key in (arcade.key.LEFT,  arcade.key.A): self.snake.queue_dir(-1,  0)
+        if key in (arcade.key.RIGHT, arcade.key.D): self.snake.queue_dir( 1,  0)
+        if key in (arcade.key.UP,    arcade.key.W): self.snake.queue_dir( 0,  1)
+        if key in (arcade.key.DOWN,  arcade.key.S): self.snake.queue_dir( 0, -1)
+
+    # ── update ───────────────────────────────────────────────────────────────
+
+    def on_update(self, delta_time):
+        if self.state != STATE_PLAYING:
+            return
+
+        self._tick_acc += delta_time * 1000
+        if self._tick_acc < SPEED:
+            return
+        self._tick_acc -= SPEED
+
+        result = self.snake.advance()
+        if result is not None:
+            if self.score > self.high_score:
+                self.high_score = self.score
+                save_high_score(self.high_score)
+            self.state = STATE_GAMEOVER
+            return
+
+        hx, hy = self.snake.head
+        if self.apple.is_at(hx, hy):
+            self.score += 1
+            self.apple.respawn(self.snake)
+        else:
+            self.snake.shrink()
+
+    # ── draw ─────────────────────────────────────────────────────────────────
+
+    def on_draw(self):
+        self.clear()
+        self._draw_header()
+        self._draw_board()
+        if self.state != STATE_MENU:
+            self._draw_apple()
+            self._draw_snake()
+        if self.state == STATE_MENU:
+            self._draw_overlay("SNAKE", "Appuyez sur une touche pour jouer")
+        elif self.state == STATE_GAMEOVER:
+            self._draw_overlay("GAME OVER", f"Score : {self.score}  —  Appuyez pour rejouer")
+
+    def _cell_to_px(self, cx, cy):
+        """Convert grid cell (cx, cy) to pixel center (px, py). Board starts at y=0."""
+        return cx * CELL + CELL // 2, cy * CELL + CELL // 2
+
+    def _draw_header(self):
+        arcade.draw_lrbt_rectangle_filled(0, W, H, H + 60, arcade.types.Color(*BG_COLOR))
+        arcade.draw_text(
+            f"Score : {self.score}",
+            20, H + 30,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="left", anchor_y="center",
+            bold=True,
+        )
+        arcade.draw_text(
+            f"High Score : {self.high_score}",
+            W - 20, H + 30,
+            arcade.color.YELLOW,
+            font_size=22,
+            anchor_x="right", anchor_y="center",
+            bold=True,
+        )
+        self._draw_mute_button()
+
+    def _draw_mute_button(self):
+        bx, by = MUTE_BTN_X, MUTE_BTN_Y
+        hw, hh = MUTE_BTN_W // 2, MUTE_BTN_H // 2
+        bg = arcade.types.Color(60, 60, 90) if self._muted else arcade.types.Color(0, 180, 100)
+        arcade.draw_lrbt_rectangle_filled(bx - hw, bx + hw, by - hh, by + hh, bg)
+        arcade.draw_lrbt_rectangle_outline(bx - hw, bx + hw, by - hh, by + hh,
+                                           arcade.color.WHITE, 2)
+        label = "MUTE" if not self._muted else "UNMUTE"
+        arcade.draw_text(label, bx, by, arcade.color.WHITE, font_size=14,
+                         anchor_x="center", anchor_y="center", bold=True)
+
+    def _draw_board(self):
+        for row in range(ROWS):
+            for col in range(COLS):
+                color = CELL_LIGHT if (col + row) % 2 == 0 else CELL_DARK
+                x = col * CELL
+                y = row * CELL
+                arcade.draw_lrbt_rectangle_filled(x, x + CELL, y, y + CELL, arcade.types.Color(*color))
+
+    def _draw_apple(self):
+        px, py = self._cell_to_px(self.apple.x, self.apple.y)
+        size = CELL - 2
+        arcade.draw_texture_rect(
+            self._burger_tex,
+            arcade.LRBT(px - size // 2, px + size // 2, py - size // 2, py + size // 2),
+        )
+
+    def _draw_snake(self):
+        segs = self.snake.segments
+        n    = len(segs)
+        for i, (cx, cy) in enumerate(segs):
+            px, py = self._cell_to_px(cx, cy)
+            t      = 1.0 if n == 1 else 1.0 - (i / (n - 1)) * 0.5
+            radius = max(2, int((CELL // 2 - 1) * t))
+            color  = arcade.types.Color(*(HEAD_COLOR if i == 0 else BODY_COLOR))
+            arcade.draw_circle_filled(px, py, radius, color)
+            if i == 0:
+                self._draw_eyes(px, py, radius)
+
+    def _draw_eyes(self, cx, cy, r):
+        dx, dy   = self.snake.dir
+        px, py   = -dy, dx           # perpendicular
+        eye_dist = r * 0.45
+        eye_fwd  = r * 0.35
+        eye_r    = r * 0.22
+        pupil_r  = eye_r * 0.55
+
+        for side in (+1, -1):
+            ex = cx + dx * eye_fwd + px * eye_dist * side
+            ey = cy + dy * eye_fwd + py * eye_dist * side
+            arcade.draw_circle_filled(ex, ey, eye_r,  arcade.color.WHITE)
+            arcade.draw_circle_filled(
+                ex + dx * pupil_r * 0.4,
+                ey + dy * pupil_r * 0.4,
+                pupil_r,
+                arcade.types.Color(17, 17, 17),
+            )
+
+    def _draw_overlay(self, title, subtitle):
+        # semi-transparent dark rectangle
+        arcade.draw_lrbt_rectangle_filled(0, W, 0, H, arcade.types.Color(0, 0, 0, 140))
+        arcade.draw_text(
+            title,
+            W // 2, H // 2 + 20,
+            arcade.types.Color(255, 68, 68) if title == "GAME OVER" else arcade.types.Color(0, 255, 136),
+            font_size=48,
+            anchor_x="center", anchor_y="center",
+            bold=True,
+        )
+        arcade.draw_text(
+            subtitle,
+            W // 2, H // 2 - 30,
+            arcade.color.WHITE,
+            font_size=20,
+            anchor_x="center", anchor_y="center",
+        )
+
+
+def main():
+    game = SnakeGame()
+    arcade.run()
+
+
+if __name__ == "__main__":
+    main()
