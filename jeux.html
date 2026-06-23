@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <script src="./music.mp3"></script>
+    <audio autoplay loop>
+    <source src="/music.mp3" type="audio/mpeg">
+</audio>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jeux Impulseo</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -66,7 +68,8 @@ const tile = canvas.width / grid;
 let snake;
 let food;
 let score;
-let highscore = localStorage.getItem("snakeHighscore") || 0;
+let highscore = 0;
+try { highscore = localStorage.getItem("snakeHighscore") || 0; } catch(e) {}
 let dx;
 let dy;
 let gameOver;
@@ -93,10 +96,14 @@ function startGame() {
 }
 
 function spawnFood() {
-    food = {
-        x: Math.floor(Math.random()*grid),
-        y: Math.floor(Math.random()*grid)
-    };
+    let pos;
+    do {
+        pos = {
+            x: Math.floor(Math.random() * grid),
+            y: Math.floor(Math.random() * grid)
+        };
+    } while (snake.some(p => p.x === pos.x && p.y === pos.y));
+    food = pos;
 }
 
 document.addEventListener("keydown", e => {
