@@ -265,12 +265,14 @@ function draw() {
     }
 }
 
-startGame();
+const speed =
+    parseInt(localStorage.getItem("snakeSpeed")) || 120;
 
 setInterval(() => {
     update();
     draw();
-}, 120);
+}, speed);
+    
 </script>
 
 </body
