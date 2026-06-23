@@ -1,68 +1,53 @@
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <script src="/music.mp3"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jeux Impulseo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-        <script src="/music.mp3"></script>
 </head>
-
 <body class="bg-slate-100">
 
-<div class="p-8">
-
-    <h1 class="text-3xl font-bold">Jeux Impulseo</h1>
-
-    <p class="mt-2 text-slate-600">
-        Bienvenue dans la page des jeux.
-    </p>
-
-    <a href="test.html"
-       class="inline-block mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-        Retour à l'application
-    </a>
-
-    <div id="snakeContainer" class="mt-10 bg-white p-6 rounded-xl shadow">
-
-        <h2 class="text-2xl font-bold mb-4">
-            Snake Impulseo
-        </h2>
-
-        <div class="flex gap-8 mb-4 font-semibold">
-            <span id="score">Score : 0</span>
-            <span id="highscore">Record : 0</span>
-        </div>
-
-        <button
-            id="fullscreenBtn"
-            class="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            ⛶ Plein écran
-        </button>
-
-        <br>
-
-        <canvas
-            id="game"
-            width="600"
-            height="600"
-            class="border rounded-lg bg-slate-900">
-        </canvas>
-
-        <p class="mt-4 text-slate-500">
-            Utilise les flèches du clavier pour jouer.
+    <div class="p-8">
+        <h1 class="text-3xl font-bold">Jeux Impulseo</h1>
+        <p class="mt-2 text-slate-600">
+            Bienvenue dans la page des jeux.
         </p>
 
-    </div>
+        <a href="test.html"
+           class="inline-block mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg">
+            Retour a l'application
+        </a>
 
-</div>
+        <!-- SNAKE -->
+        <div class="mt-10 bg-white p-6 rounded-xl shadow">
+            <h2 class="text-2xl font-bold mb-4">Snake Impulseo</h2>
+
+            <button id="fullscreenBtn"
+    class="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    ⛶ Plein écran
+</button>
+
+            <div class="flex justify-between mb-4">
+                <span id="score">Score : 0</span>
+                <span id="highscore">Record : 0</span>
+            </div>
+
+            <canvas id="game" width="600" height="600"
+                class="border rounded-lg bg-slate-900">
+            </canvas>
+
+            <p class="mt-4 text-slate-500">
+                Utilise les flèches du clavier pour jouer.
+            </p>
+        </div>
+    </div>
 
 <script>
 
-// Empêche le scroll avec les flèches
+// Empêche les flèches de faire défiler la page
 window.addEventListener("keydown", function(e) {
-
     if (
         e.key === "ArrowUp" ||
         e.key === "ArrowDown" ||
@@ -71,7 +56,6 @@ window.addEventListener("keydown", function(e) {
     ) {
         e.preventDefault();
     }
-
 }, { passive: false });
 
 const canvas = document.getElementById("game");
@@ -83,18 +67,15 @@ const tile = canvas.width / grid;
 let snake;
 let food;
 let score;
+let highscore = localStorage.getItem("snakeHighscore") || 0;
 let dx;
 let dy;
 let gameOver;
-
-let highscore =
-    localStorage.getItem("snakeHighscore") || 0;
 
 document.getElementById("highscore").textContent =
     "Record : " + highscore;
 
 function startGame() {
-
     snake = [
         {x:10,y:10},
         {x:9,y:10},
@@ -103,7 +84,6 @@ function startGame() {
 
     dx = 1;
     dy = 0;
-
     score = 0;
     gameOver = false;
 
@@ -114,10 +94,9 @@ function startGame() {
 }
 
 function spawnFood() {
-
     food = {
-        x: Math.floor(Math.random() * grid),
-        y: Math.floor(Math.random() * grid)
+        x: Math.floor(Math.random()*grid),
+        y: Math.floor(Math.random()*grid)
     };
 }
 
@@ -147,7 +126,6 @@ document.addEventListener("keydown", e => {
         dx = 1;
         dy = 0;
     }
-
 });
 
 function update() {
@@ -169,12 +147,8 @@ function update() {
         return;
     }
 
-    for(const part of snake){
-
-        if(
-            part.x === head.x &&
-            part.y === head.y
-        ){
+    for(let part of snake){
+        if(part.x === head.x && part.y === head.y){
             endGame();
             return;
         }
@@ -182,10 +156,7 @@ function update() {
 
     snake.unshift(head);
 
-    if(
-        head.x === food.x &&
-        head.y === food.y
-    ){
+    if(head.x === food.x && head.y === food.y){
 
         score++;
 
@@ -193,7 +164,6 @@ function update() {
             "Score : " + score;
 
         if(score > highscore){
-
             highscore = score;
 
             localStorage.setItem(
@@ -208,7 +178,6 @@ function update() {
         spawnFood();
 
     } else {
-
         snake.pop();
     }
 }
@@ -220,19 +189,12 @@ function endGame() {
 function draw() {
 
     ctx.fillStyle = "#0f172a";
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
     for(let y=0;y<grid;y++){
-
         for(let x=0;x<grid;x++){
-
             ctx.fillStyle =
-                (x+y)%2 === 0
+                (x+y)%2===0
                 ? "#143a69"
                 : "#0d2d54";
 
@@ -248,45 +210,38 @@ function draw() {
     ctx.fillStyle = "#ff4444";
 
     ctx.beginPath();
-
     ctx.arc(
         food.x*tile + tile/2,
         food.y*tile + tile/2,
         tile/3,
         0,
-        Math.PI * 2
+        Math.PI*2
     );
-
     ctx.fill();
 
     snake.forEach((part,index)=>{
 
         ctx.fillStyle =
-            index === 0
+            index===0
             ? "#00ff88"
             : "#00cc66";
 
         ctx.beginPath();
-
         ctx.arc(
             part.x*tile + tile/2,
             part.y*tile + tile/2,
             tile/2.5,
             0,
-            Math.PI * 2
+            Math.PI*2
         );
-
         ctx.fill();
     });
 
     if(gameOver){
 
-        ctx.fillStyle =
-            "rgba(0,0,0,0.6)";
-
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
         ctx.fillRect(
-            0,
-            0,
+            0,0,
             canvas.width,
             canvas.height
         );
@@ -298,5 +253,32 @@ function draw() {
         ctx.fillText(
             "GAME OVER",
             canvas.width/2,
-            canvas.height/
-```
+            canvas.height/2
+        );
+
+        ctx.font = "20px Arial";
+
+        ctx.fillText(
+            "Appuie sur une touche pour rejouer",
+            canvas.width/2,
+            canvas.height/2 + 40
+        );
+    }
+}
+
+startGame();
+
+setInterval(() => {
+    update();
+    draw();
+}, 120);
+</script>
+
+</body>
+
+<button id="fullscreenBtn"
+    class="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    ⛶ Plein écran
+</button>
+
+</html>
