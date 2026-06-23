@@ -14,39 +14,88 @@
             C'est ici que tu peux changer t'es parametres.
         </p>
 
-        <a href="test.html"
-           class="inline-block mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg">
-            Retour au tableau de bord
-        </a>
+ ```html
+<div class="bg-white p-6 rounded-xl shadow max-w-xl">
+
+    <h2 class="text-2xl font-bold mb-6">
+        Paramètres
+    </h2>
+
+    <!-- Mode sombre -->
+    <div class="flex justify-between items-center mb-6">
+        <span class="font-medium">🌙 Mode sombre</span>
+
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="darkMode" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-blue-600"></div>
+        </label>
     </div>
 
-<div class="space-y-4">
+    <!-- Sons -->
+    <div class="flex justify-between items-center mb-6">
+        <span class="font-medium">🔊 Sons du Snake</span>
 
-    <label>
-        <input type="checkbox">
-        <a>Mode sombre</a>
-    </label>
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="snakeSound" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-green-600"></div>
+        </label>
+    </div>
 
-    <label>
-        <input type="checkbox">
-        <a>Sons du Snake</a>
-    </label>
+    <!-- Vitesse -->
+    <div class="mb-6">
+        <label class="font-medium block mb-2">
+            ⚡ Vitesse du Snake
+        </label>
 
-    <label>
-        <input type="checkbox">
-        Musique de fond
-    </label>
+        <select
+            id="snakeSpeed"
+            class="border rounded-lg px-3 py-2 w-full">
 
-    <label>
-        Vitesse du Snake
-        <select>
-            <option>Lent</option>
-            <option>Normal</option>
-            <option>Rapide</option>
+            <option value="180">Rapide</option>
+            <option value="120" selected>Normal</option>
+            <option value="80">Très rapide</option>
+            <option value="250">Lent</option>
+
         </select>
-    </label>
+    </div>
 
-</div>    
+</div>
+
+<script>
+
+// Sauvegarde paramètres
+document.getElementById("darkMode").addEventListener("change", function() {
+    localStorage.setItem("darkMode", this.checked);
+});
+
+document.getElementById("snakeSound").addEventListener("change", function() {
+    localStorage.setItem("snakeSound", this.checked);
+});
+
+document.getElementById("snakeSpeed").addEventListener("change", function() {
+    localStorage.setItem("snakeSpeed", this.value);
+});
+
+// Chargement paramètres
+if(localStorage.getItem("darkMode") === "true"){
+    document.body.classList.add("bg-slate-900");
+    document.body.classList.remove("bg-slate-100");
+    document.getElementById("darkMode").checked = true;
+}
+
+if(localStorage.getItem("snakeSound") === "false"){
+    document.getElementById("snakeSound").checked = false;
+}
+
+if(localStorage.getItem("snakeSpeed")){
+    document.getElementById("snakeSpeed").value =
+        localStorage.getItem("snakeSpeed");
+}
+
+</script>
+
+
+</div>
 
 </body>
 </html>
