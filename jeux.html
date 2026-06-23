@@ -276,9 +276,25 @@ setInterval(() => {
 
 </body>
 
-<button id="fullscreenBtn"
-    class="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    ⛶ Plein écran
-</button>
+// Bouton plein écran
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+
+fullscreenBtn.addEventListener("click", async () => {
+
+    const canvas = document.getElementById("game");
+
+    try {
+
+        if (!document.fullscreenElement) {
+            await canvas.requestFullscreen();
+        } else {
+            await document.exitFullscreen();
+        }
+
+    } catch(err) {
+        console.error(err);
+    }
+
+});
 
 </html>
