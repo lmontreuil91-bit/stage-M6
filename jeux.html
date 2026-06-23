@@ -23,6 +23,11 @@
         <div class="mt-10 bg-white p-6 rounded-xl shadow">
             <h2 class="text-2xl font-bold mb-4">Snake Impulseo</h2>
 
+            <button id="fullscreenBtn"
+    class="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    ⛶ Plein écran
+</button>
+
             <div class="flex justify-between mb-4">
                 <span id="score">Score : 0</span>
                 <span id="highscore">Record : 0</span>
@@ -38,8 +43,9 @@
         </div>
     </div>
 
-<script>    
+<script>
 
+// Empêche les flèches de faire défiler la page
 window.addEventListener("keydown", function(e) {
     if (
         e.key === "ArrowUp" ||
@@ -50,7 +56,7 @@ window.addEventListener("keydown", function(e) {
         e.preventDefault();
     }
 }, { passive: false });
-    
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -268,4 +274,10 @@ setInterval(() => {
 </script>
 
 </body>
+
+<button id="fullscreenBtn"
+    class="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    ⛶ Plein écran
+</button>
+
 </html>
