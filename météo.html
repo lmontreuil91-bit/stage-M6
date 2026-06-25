@@ -14,79 +14,35 @@
             C'est ici que tu peux voir la météo.
         </p>
 
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 100%;
-        }
-        h1 {
-            color: #0078d4;
-            margin-top: 0;
-            text-align: center;
-        }
-        #meteo-liste {
-            list-style: none;
-            padding: 0;
-        }
-        .meteo-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .meteo-item:last-child {
-            border-bottom: none;
-        }
-        .date {
-            font-weight: bold;
-        }
-        .temp-max {
-            color: #d83b01;
-            font-weight: bold;
-        }
-        .temp-min {
-            color: #0078d4;
-        }
-        .chargement {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-        }
-    </style>
+<body>
 
     <div class="container">
-        <h1>Météo à Paris</h1>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button onclick="changerVille(48.866667, 2.333333, 'Paris')" style="padding: 10px 20px; margin: 5px; cursor: pointer;">Paris</button>
+            <button onclick="changerVille(44.837789, -0.57918, 'Bordeaux')" style="padding: 10px 20px; margin: 5px; cursor: pointer;">Bordeaux</button>
+        </div>
+
+        <h1 id="ville-titre">Météo à Paris</h1>
         <div id="loading" class="chargement">Chargement des prévisions...</div>
         <ul id="meteo-liste"></ul>
     </div>
 
     <script>
-        async function ObtenirMeteo() {
-            const url = "https://api.open-meteo.com/v1/forecast?latitude=48.866667&longitude=2.333333&daily=temperature_2m_max,temperature_2m_min&timezone=Europe/Paris";
+        // La fonction principale qui accepte la latitude (lat) et la longitude (lon)
+        async function ObtenirMeteo(lat, lon) {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=Europe/Paris`;
             const listeElement = document.getElementById('meteo-liste');
             const loadingElement = document.getElementById('loading');
+
+            // On vide l'ancienne météo et on affiche le chargement
+            listeElement.innerHTML = "";
+            loadingElement.style.display = 'block';
 
             try {
                 const reponse = await fetch(url);
                 if (!reponse.ok) throw new Error(`Erreur HTTP : ${reponse.status}`);
 
                 const donnees = await reponse.json();
-                
-                // On cache le message de chargement
                 loadingElement.style.display = 'none';
 
                 const dates = donnees.daily.time;
@@ -94,9 +50,7 @@
                 const tempMin = donnees.daily.temperature_2m_min;
                 const unite = donnees.daily_units.temperature_2m_max;
 
-                // On génère le HTML pour chaque jour
                 for (let i = 0; i < dates.length; i++) {
-                    // Optionnel : Formatage de la date en français (ex: "lun. 15")
                     const dateOption = { weekday: 'short', day: 'numeric', month: 'short' };
                     const dateFormatee = new Date(dates[i]).toLocaleDateString('fr-FR', dateOption);
 
@@ -111,21 +65,22 @@
                     `;
                     listeElement.appendChild(li);
                 }
-
             } catch (erreur) {
                 loadingElement.textContent = "Impossible de charger la météo.";
-                console.error("Erreur :", erreur);
+                console.error(erreur);
             }
         }
 
-        // Au lieu de changer l'URL à chaque fois, on passe la latitude et la longitude en arguments
-async function ObtenirMeteo(lat, lon) {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=Europe/Paris`;
-    // ... tout le reste de ton code reste EXACTEMENT le même ...
+        // La fonction appelée par les boutons pour basculer d'une ville à l'autre
+        function changerVille(lat, lon, nomVille) {
+            document.getElementById('ville-titre').textContent = `Météo à ${nomVille}`;
+            ObtenirMeteo(lat, lon); // Relance la recherche avec les nouvelles coordonnées
+        }
 
-        // Lancement automatique de la fonction au chargement de la page
-        ObtenirMeteo();
+        // Chargement initial par défaut (Paris)
+        ObtenirMeteo(48.866667, 2.333333);
     </script>
+</body>
         
 <div>
         <a href="test.html"
