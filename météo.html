@@ -118,6 +118,11 @@
             }
         }
 
+        // Au lieu de changer l'URL à chaque fois, on passe la latitude et la longitude en arguments
+async function ObtenirMeteo(lat, lon) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=Europe/Paris`;
+    // ... tout le reste de ton code reste EXACTEMENT le même ...
+
         // Lancement automatique de la fonction au chargement de la page
         ObtenirMeteo();
     </script>
