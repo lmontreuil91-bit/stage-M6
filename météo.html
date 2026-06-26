@@ -173,11 +173,10 @@
                 loadingElement.textContent = "Impossible de charger la météo.";
                 console.error(erreur);
             }
-function changerVille(event, lat, lon, nomVille) {
-    event.preventDefault(); // Bloque la remontée automatique de la page
-    document.getElementById('ville-titre').textContent = `Météo à ${nomVille}`;
-    ObtenirMeteo(lat, lon);
-}
+        function changerVille(lat, lon, nomVille) {
+            document.getElementById('ville-titre').textContent = `Météo à ${nomVille}`;
+            ObtenirMeteo(lat, lon);
+        }
 
         // Charger Paris par défaut au démarrage
         ObtenirMeteo(48.866667, 2.333333);
