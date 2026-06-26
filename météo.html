@@ -3,69 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Météo</title>
+    <title>Météo & Vigilance</title>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-100">
-
-    <div class="p-8">
-        <h1 class="text-3xl font-bold">Météo</h1>
-            <p class="mt-2 text-slate-600">
-            C'est ici que tu peux voir la météo.
-        </p>
-
     <style>
-        <body {
+        /* Styles personnalisés pour la modale et l'effet de flou */
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8;
-            color: #333;
+        }
+        .blur-effect {
+            filter: blur(8px);
+            pointer-events: none;
+            transition: filter 0.4s ease;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            z-index: 9999;
         }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-        h1 {
-            color: #0078d4;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        .description {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        /* Style des boutons de sélection de ville */
-        .btn-selection {
-            background-color: #f0f4f8;
-            color: #0078d4;
-            border: 2px solid #0078d4;
-            padding: 8px 16px;
-            margin: 0 5px 20px 5px;
+        .liste-vigilance {
+            background: #fff5f5;
+            border: 1px solid #ffcccc;
             border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        .btn-selection:hover {
-            background-color: #0078d4;
-            color: white;
-        }
-        #meteo-liste {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0 0 0;
+            padding: 10px;
+            margin: 15px 0;
+            overflow-y: auto;
             text-align: left;
+            font-size: 14px;
+            max-height: 40vh;
         }
         .meteo-item {
             display: flex;
@@ -76,69 +47,81 @@
         .meteo-item:last-child {
             border-bottom: none;
         }
-        .date {
-            font-weight: bold;
-        }
-        .temp-max {
-            color: #d83b01;
-            font-weight: bold;
-        }
-        .temp-min {
-            color: #0078d4;
-        }
-        .chargement {
-            color: #666;
-            font-style: italic;
-            margin: 20px 0;
-        }
-        /* Bouton retour en bas */
-        .btn-retour {
-            display: inline-block;
-            background-color: #415fff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .btn-retour:hover {
-            background-color: #344ed1;
-        }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 flex justify-content justify-center items-center min-height min-h-screen m-0 p-4">
 
-    <div class="container">
-        <h1>Météo</h1>
-        <p class="description">C'est ici que tu peux voir la météo.</p>
+    <div id="alert-modal" class="modal-overlay">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-width max-w-md w-full border-3 border-t-8 border-red-600 text-center flex flex-col box-border">
+            <div class="text-red-600 font-bold text-xl mb-2">⚠️ ALERTE VIGILANCE ROUGE</div>
+            <p class="text-sm text-slate-500 mb-2">Les départements suivants sont placés en vigilance maximale :</p>
+            
+            <div class="liste-vigilance">
+                <ul class="list-disc pl-5 font-medium text-slate-800">
+                    <li>Aisne (02)</li><li>Allier (03)</li><li>Ardennes (08)</li><li>Aube (10)</li>
+                    <li>Bas-Rhin (67)</li><li>Calvados (14)</li><li>Charente (16)</li><li>Cher (18)</li>
+                    <li>Corrèze (19)</li><li>Côte-d'Or (21)</li><li>Creuse (23)</li><li>Deux-Sèvres (79)</li>
+                    <li>Dordogne (24)</li><li>Doubs (25)</li><li>Essonne (91)</li><li>Eure (27)</li>
+                    <li>Eure-et-Loir (28)</li><li>Gers (32)</li><li>Haut-Rhin (68)</li><li>Haute-Garonne (31)</li>
+                    <li>Haute-Marne (52)</li><li>Haute-Saône (70)</li><li>Haute-Vienne (87)</li><li>Hauts-de-Seine (92)</li>
+                    <li>Ille-et-Vilaine (35)</li><li>Indre (36)</li><li>Indre-et-Loire (37)</li><li>Jura (39)</li>
+                    <li>Loir-et-Cher (41)</li><li>Loire (42)</li><li>Loiret (45)</li><li>Lot (46)</li>
+                    <li>Lot-et-Garonne (47)</li><li>Maine-et-Loire (49)</li><li>Marne (51)</li><li>Mayenne (53)</li>
+                    <li>Meurthe-et-Moselle (54)</li><li>Meuse (55)</li><li>Moselle (57)</li><li>Nièvre (58)</li>
+                    <li>Nord (59)</li><li>Oise (60)</li><li>Orne (61)</li><li>Paris (75)</li>
+                    <li>Pas-de-Calais (62)</li><li>Puy-de-Dôme (63)</li><li>Saône-et-Loire (71)</li><li>Sarthe (72)</li>
+                    <li>Seine-et-Marne (77)</li><li>Seine-Maritime (76)</li><li>Seine-St-Denis (93)</li><li>Somme (80)</li>
+                    <li>Tarn (81)</li><li>Tarn-et-Garonne (82)</li><li>Terr. de Belfort (90)</li><li>Val-D'Oise (95)</li>
+                    <li>Val-de-Marne (94)</li><li>Vienne (86)</li><li>Vosges (88)</li><li>Yonne (89)</li>
+                    <li>Yvelines (78)</li>
+                </ul>
+            </div>
+            
+            <button class="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors" onclick="accederMeteo()">
+                Accéder à la météo
+            </button>
+        </div>
+    </div>
 
-        <div>
-            <button class="btn-selection" onclick="changerVille(48.866667, 2.333333, 'Paris')">Paris</button>
-            <button class="btn-selection" onclick="changerVille(44.837789, -0.57918, 'Bordeaux')">Bordeaux</button>
-            <button class="btn-selection" onclick="changerVille(event, 43.296482, 5.36978, 'Marseille')">Marseille</button>
-            <button class="btn-selection" onclick="changerVille(event, 47.218371, -1.553621, 'Nantes')">Nantes</button>
+    <div id="main-content" class="bg-white p-8 rounded-xl shadow-md max-w-lg w-full text-center blur-effect box-border">
+        <h1 class="text-[#0078d4] text-2xl font-bold mb-2">Météo</h1>
+        <p class="text-sm text-slate-500 mb-6">C'est ici que tu peux voir la météo.</p>
+
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+            <button class="bg-[#f0f4f8] text-[#0078d4] border-2 border-[#0078d4] py-2 px-4 rounded-lg font-bold hover:bg-[#0078d4] hover:text-white transition-all" onclick="changerVille(event, 48.866667, 2.333333, 'Paris')">Paris</button>
+            <button class="bg-[#f0f4f8] text-[#0078d4] border-2 border-[#0078d4] py-2 px-4 rounded-lg font-bold hover:bg-[#0078d4] hover:text-white transition-all" onclick="changerVille(event, 44.837789, -0.57918, 'Bordeaux')">Bordeaux</button>
+            <button class="bg-[#f0f4f8] text-[#0078d4] border-2 border-[#0078d4] py-2 px-4 rounded-lg font-bold hover:bg-[#0078d4] hover:text-white transition-all" onclick="changerVille(event, 43.296482, 5.36978, 'Marseille')">Marseille</button>
+            <button class="bg-[#f0f4f8] text-[#0078d4] border-2 border-[#0078d4] py-2 px-4 rounded-lg font-bold hover:bg-[#0078d4] hover:text-white transition-all" onclick="changerVille(event, 47.218371, -1.553621, 'Nantes')">Nantes</button>
         </div>
 
-        <div style="background: #fafafa; border-radius: 8px; padding: 15px; border: 1px solid #eee;">
-            <h3 id="ville-titre" style="margin-top: 0; color: #333;">Météo à Paris</h3>
-            <div id="loading" class="chargement">Chargement des prévisions...</div>
-            <ul id="meteo-liste"></ul>
- <div>
-            <a href="test.html"
-        class="btn-retour">Retour à l'application 
-           </a>
-</div>
+        <div class="bg-[#fafafa] rounded-lg p-4 border border-slate-200 text-left">
+            <h3 id="ville-titre" class="text-slate-800 font-bold mt-0 mb-3 text-center">Météo à Paris</h3>
+            <div id="loading" class="text-slate-500 italic text-center my-4">Chargement des prévisions...</div>
+            <ul id="meteo-liste" class="p-0 m-0 list-none"></ul>
+        </div>
+
+        <div class="mt-6">
+            <a href="test.html" class="inline-block bg-[#415fff] hover:bg-[#344ed1] text-white font-bold py-2 px-5 rounded-lg transition-colors decoration-none">
+                Retour à l'application
+            </a>
+        </div>
+    </div>
 
     <script>
+        // Fermer l'alerte de vigilance et retirer le flou
+        function accederMeteo() {
+            document.getElementById('alert-modal').style.display = 'none';
+            const mainContent = document.getElementById('main-content');
+            mainContent.classList.remove('blur-effect');
+            mainContent.style.pointerEvents = 'auto';
+        }
+
+        // Récupération des données API Open-Meteo
         async function ObtenirMeteo(lat, lon) {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=Europe/Paris`;
             const listeElement = document.getElementById('meteo-liste');
             const loadingElement = document.getElementById('loading');
 
-            // Reset l'affichage
             listeElement.innerHTML = "";
             loadingElement.style.display = 'block';
 
@@ -161,10 +144,10 @@
                     const li = document.createElement('li');
                     li.className = 'meteo-item';
                     li.innerHTML = `
-                        <span class="date">${dateFormatee}</span>
+                        <span class="font-bold text-slate-700">${dateFormatee}</span>
                         <div>
-                            <span class="temp-max">↑ ${tempMax[i]}${unite}</span> / 
-                            <span class="temp-min">↓ ${tempMin[i]}${unite}</span>
+                            <span class="text-[#d83b01] font-bold">↑ ${tempMax[i]}${unite}</span> / 
+                            <span class="text-[#0078d4]">↓ ${tempMin[i]}${unite}</span>
                         </div>
                     `;
                     listeElement.appendChild(li);
@@ -173,16 +156,17 @@
                 loadingElement.textContent = "Impossible de charger la météo.";
                 console.error(erreur);
             }
-        function changerVille(lat, lon, nomVille) {
+        }
+
+        // Action sur les clics de boutons (sans remonter)
+        function changerVille(event, lat, lon, nomVille) {
+            event.preventDefault();
             document.getElementById('ville-titre').textContent = `Météo à ${nomVille}`;
             ObtenirMeteo(lat, lon);
         }
 
-        // Charger Paris par défaut au démarrage
+        // Lancement par défaut sur Paris au chargement initial
         ObtenirMeteo(48.866667, 2.333333);
     </script>
-
 </body>
 </html>
-
-
