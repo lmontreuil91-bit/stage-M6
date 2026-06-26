@@ -118,6 +118,8 @@
         <div>
             <button class="btn-selection" onclick="changerVille(48.866667, 2.333333, 'Paris')">Paris</button>
             <button class="btn-selection" onclick="changerVille(44.837789, -0.57918, 'Bordeaux')">Bordeaux</button>
+            <button class="btn-selection" onclick="changerVille(event, 43.296482, 5.36978, 'Marseille')">Marseille</button>
+            <button class="btn-selection" onclick="changerVille(event, 47.218371, -1.553621, 'Nantes')">Nantes</button>
         </div>
 
         <div style="background: #fafafa; border-radius: 8px; padding: 15px; border: 1px solid #eee;">
@@ -171,12 +173,11 @@
                 loadingElement.textContent = "Impossible de charger la météo.";
                 console.error(erreur);
             }
-        }
-
-        function changerVille(lat, lon, nomVille) {
-            document.getElementById('ville-titre').textContent = `Météo à ${nomVille}`;
-            ObtenirMeteo(lat, lon);
-        }
+function changerVille(event, lat, lon, nomVille) {
+    event.preventDefault(); // Bloque la remontée automatique de la page
+    document.getElementById('ville-titre').textContent = `Météo à ${nomVille}`;
+    ObtenirMeteo(lat, lon);
+}
 
         // Charger Paris par défaut au démarrage
         ObtenirMeteo(48.866667, 2.333333);
